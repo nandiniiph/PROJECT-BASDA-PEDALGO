@@ -217,3 +217,17 @@ def transaksi():
     print(Fore.CYAN + "4. Bank BCA")
     print(Fore.CYAN + "5. DANA")
     print(Fore.CYAN + "6. GOPAY")
+    print(Fore.YELLOW + "=========================================")
+    
+    choice = input(Fore.MAGENTA + "Pilih metode pembayaran: ")
+    jumlah_pembayaran = 5000  
+    try :
+        transaksi_query = "INSERT INTO transaksi (id_mtd_bayar, tanggal_transaksi, jumlah, id_detail_penyewaan, id_laporan_keuangan) VALUES (%s, %s, %s, %s, 1)"
+        cur.execute(transaksi_query, (choice, tgl, jumlah_pembayaran, datapenyewaan))
+        os.system('cls')
+        print("----------BERIKUT DATA PENYEWAAN ANDA----------")
+    
+        cur.execute("SELECT id_transaksi FROM transaksi ORDER BY id_transaksi DESC LIMIT 1")
+        id_transaksi = cur.fetchone()[0]
+    
+        conn.commit()
