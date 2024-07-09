@@ -205,3 +205,15 @@ def sewa_sepeda():
         conn.rollback()
         input(Fore.MAGENTA + "Tekan enter untuk kembali...")
         sewa_sepeda()
+
+def transaksi():
+    os.system('cls')
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "            PILIH METODE PEMBAYARAN        ")
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "1. Cash")
+    print(Fore.CYAN + "2. Bank BRI")
+    print(Fore.CYAN + "3. Bank Mandiri")
+    print(Fore.CYAN + "4. Bank BCA")
+    print(Fore.CYAN + "5. DANA")
+    print(Fore.CYAN + "6. GOPAY")
