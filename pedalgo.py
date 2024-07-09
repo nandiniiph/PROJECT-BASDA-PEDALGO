@@ -207,3 +207,67 @@ def sewa_sepeda():
         conn.rollback()
         input(Fore.MAGENTA + "Tekan enter untuk kembali...")
         sewa_sepeda()
+
+def transaksi():
+    os.system('cls')
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "            PILIH METODE PEMBAYARAN        ")
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "1. Cash")
+    print(Fore.CYAN + "2. Bank BRI")
+    print(Fore.CYAN + "3. Bank Mandiri")
+    print(Fore.CYAN + "4. Bank BCA")
+    print(Fore.CYAN + "5. DANA")
+    print(Fore.CYAN + "6. GOPAY")
+    print(Fore.YELLOW + "=========================================")
+    
+    choice = input(Fore.MAGENTA + "Pilih metode pembayaran: ")
+    jumlah_pembayaran = 5000  
+    try :
+        transaksi_query = "INSERT INTO transaksi (id_mtd_bayar, tanggal_transaksi, jumlah, id_detail_penyewaan, id_laporan_keuangan) VALUES (%s, %s, %s, %s, 1)"
+        cur.execute(transaksi_query, (choice, tgl, jumlah_pembayaran, datapenyewaan))
+        os.system('cls')
+        print("----------BERIKUT DATA PENYEWAAN ANDA----------")
+    
+        cur.execute("SELECT id_transaksi FROM transaksi ORDER BY id_transaksi DESC LIMIT 1")
+        id_transaksi = cur.fetchone()[0]
+    
+        conn.commit()
+
+    # Menampilkan data penyewaan
+        cur.execute("""SELECT r.nama, 
+       p.tanggal_penyewaan, 
+       p.waktu_mulai, 
+       p.waktu_selesai, 
+       s.id_sepeda, 
+       CASE 
+           WHEN t.id_mtd_bayar = 1 THEN 'cash'
+           WHEN t.id_mtd_bayar = 2 THEN 'Bank BRI'
+           WHEN t.id_mtd_bayar = 3 THEN 'Bank Mandiri'
+           WHEN t.id_mtd_bayar = 4 THEN 'Bank BCA'
+           WHEN t.id_mtd_bayar = 5 THEN 'Dana'
+           WHEN t.id_mtd_bayar = 6 THEN 'Gopay'
+       END AS metode_pembayaran
+FROM transaksi t
+JOIN detail_penyewaan dp ON t.id_detail_penyewaan = dp.id_detail_penyewaan
+JOIN sepeda s ON s.id_sepeda = dp.id_sepeda
+JOIN penyewaan p ON p.id_penyewaan = dp.id_penyewaan
+JOIN role r ON r.id_role = dp.id_role
+JOIN metode_pembayaran m ON m.id_mtd_bayar = t.id_mtd_bayar
+    WHERE p.id_penyewaan = %s
+    """, (datapenyewaan,))
+    
+        hasil = cur.fetchall()
+        headers = [desc[0] for desc in cur.description]
+        print(tabulate(hasil, headers=headers, tablefmt='pretty'))
+
+        print(Fore.GREEN + "Pembayaran berhasil! Terima kasih telah menggunakan Pedalgo.")
+    except psycopg2.Error as e:
+        print(Fore.RED + f"Terjadi kesalahan pada database: {e}")
+        conn.rollback()
+    except Exception as e:
+        print(Fore.RED + f"Terjadi kesalahan: {e}")
+    finally:
+        input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+        after_login(logged_in_user)
+        return id_transaksi
