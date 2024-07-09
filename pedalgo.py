@@ -271,3 +271,22 @@ JOIN metode_pembayaran m ON m.id_mtd_bayar = t.id_mtd_bayar
         input(Fore.MAGENTA + "Tekan enter untuk kembali...")
         after_login(logged_in_user)
         return id_transaksi
+    
+def tambah_admin():
+    os.system('cls')
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "                Tambah Admin               ")
+    print(Fore.YELLOW + "=========================================\n")
+    nama = input(Fore.WHITE + 'Masukkan nama admin baru: ' + Fore.RESET)
+    email = input(Fore.WHITE + 'Masukkan email admin baru: ' + Fore.RESET)
+    alamat = input(Fore.WHITE + 'Masukkan alamat admin baru: ' + Fore.RESET)
+    no_handphone = input(Fore.WHITE + 'Masukkan nomor handphone admin baru: ' + Fore.RESET)
+    password = input(Fore.WHITE + 'Masukkan password admin baru: ' + Fore.RESET)
+
+    query = "INSERT INTO users (nama, email, alamat, no_handphone, password, id_jenis_role) VALUES (%s, %s, %s, %s, %s, 2)"
+    cur.execute(query, (nama, email, alamat, no_handphone, password))
+    conn.commit()
+
+    print(Fore.GREEN + "\nAdmin baru berhasil ditambahkan.")
+    input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    admin_page(rows)
