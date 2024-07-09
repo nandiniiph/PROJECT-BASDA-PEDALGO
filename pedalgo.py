@@ -255,3 +255,19 @@ JOIN role r ON r.id_role = dp.id_role
 JOIN metode_pembayaran m ON m.id_mtd_bayar = t.id_mtd_bayar
     WHERE p.id_penyewaan = %s
     """, (datapenyewaan,))
+        
+    
+        hasil = cur.fetchall()
+        headers = [desc[0] for desc in cur.description]
+        print(tabulate(hasil, headers=headers, tablefmt='pretty'))
+
+        print(Fore.GREEN + "Pembayaran berhasil! Terima kasih telah menggunakan Pedalgo.")
+    except psycopg2.Error as e:
+        print(Fore.RED + f"Terjadi kesalahan pada database: {e}")
+        conn.rollback()
+    except Exception as e:
+        print(Fore.RED + f"Terjadi kesalahan: {e}")
+    finally:
+        input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+        after_login(logged_in_user)
+        return id_transaksi
