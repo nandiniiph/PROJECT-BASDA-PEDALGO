@@ -142,3 +142,29 @@ def sewa_sepeda():
                 print(Fore.RED + "Input tidak valid. Pastikan format tanggal, waktu, dan durasi benar. Waktu penyewaan maksimal 15:00:00.")
                 input(Fore.MAGENTA + "Tekan enter untuk kembali...")
                 sewa_sepeda()
+
+
+            except psycopg2.Error as e:
+                print(Fore.RED + f"Terjadi kesalahan pada database: {e}")
+                conn.rollback()
+                input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+        
+        query = f"""
+        SELECT * FROM sepeda 
+        WHERE id_sepeda NOT IN (
+            SELECT id_sepeda 
+            FROM detail_penyewaan dp 
+            JOIN penyewaan p ON p.id_penyewaan = dp.id_penyewaan 
+            WHERE p.tanggal_penyewaan = %s 
+            AND ((p.waktu_mulai <= %s AND p.waktu_selesai >= %s) 
+            OR (p.waktu_mulai <= %s AND p.waktu_selesai >= %s))
+        )
+        """
+        cur.execute(query, (tgl, time_start, time_start, time_end, time_end))
+        rows = cur.fetchall()
+        
+        if not rows:
+            print(Fore.RED + "Maaf, tidak ada sepeda yang tersedia untuk waktu yang dipilih.")
+            input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+            after_login(logged_in_user)
+            return
