@@ -168,3 +168,42 @@ def sewa_sepeda():
             input(Fore.MAGENTA + "Tekan enter untuk kembali...")
             after_login(logged_in_user)
             return
+        
+        
+        column_names = [description[0] for description in cur.description]
+        loading_animation("Sebentar ya banggg cari sepeda dulu....")
+        print("=========================================")
+        print("       Daftar Sepeda yang Tersedia       ")
+        print("=========================================")
+        print(tabulate(rows, headers=column_names, tablefmt='pretty'))
+        
+        id_sepeda = input(Fore.WHITE + 'Masukkan ID sepeda yang ingin disewa: ' + Fore.RESET)
+        ket = input(Fore.WHITE + 'Masukkan keterangan (jika tidak ada beri - ajaaa): ' + Fore.RESET)
+        
+        penyewaan_query = "INSERT INTO penyewaan (tanggal_penyewaan, durasi_penyewaan, waktu_mulai, waktu_selesai) VALUES (%s, %s, %s, %s)"
+        cur.execute(penyewaan_query, (tgl, durasi, time_start, time_end))
+        
+        cur.execute("SELECT id_penyewaan FROM penyewaan ORDER BY id_penyewaan DESC LIMIT 1")
+        id_penyewaan = cur.fetchone()[0]
+        
+        detail_query = "INSERT INTO detail_penyewaan (keterangan, id_sepeda, id_role, id_penyewaan) VALUES (%s, %s, %s, %s)"
+        cur.execute(detail_query, (ket, id_sepeda, logged_in_user[0], id_penyewaan))
+        
+        cur.execute("SELECT id_detail_penyewaan FROM detail_penyewaan ORDER BY id_detail_penyewaan DESC LIMIT 1")
+        global datapenyewaan
+        datapenyewaan = cur.fetchone()[0]
+        
+        conn.commit()
+        
+        print(Fore.GREEN + "\nPenyewaan berhasil! Selamat menikmati perjalanan Anda Dan Silahkan Melakukan Pembayaran")
+        transaksi()
+        return datapenyewaan
+    except ValueError:
+        print(Fore.RED + "Input tidak valid. Pastikan format tanggal, waktu, dan durasi benar.")
+        input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+        sewa_sepeda()
+    except psycopg2.Error as e:
+        print(Fore.RED + f"Terjadi kesalahan pada database: {e}")
+        conn.rollback()
+        input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+        sewa_sepeda()
