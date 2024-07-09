@@ -271,3 +271,109 @@ JOIN metode_pembayaran m ON m.id_mtd_bayar = t.id_mtd_bayar
         input(Fore.MAGENTA + "Tekan enter untuk kembali...")
         after_login(logged_in_user)
         return id_transaksi
+    
+def tambah_admin():
+    os.system('cls')
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "                Tambah Admin               ")
+    print(Fore.YELLOW + "=========================================\n")
+    nama = input(Fore.WHITE + 'Masukkan nama admin baru: ' + Fore.RESET)
+    email = input(Fore.WHITE + 'Masukkan email admin baru: ' + Fore.RESET)
+    alamat = input(Fore.WHITE + 'Masukkan alamat admin baru: ' + Fore.RESET)
+    no_handphone = input(Fore.WHITE + 'Masukkan nomor handphone admin baru: ' + Fore.RESET)
+    password = input(Fore.WHITE + 'Masukkan password admin baru: ' + Fore.RESET)
+
+    query = "INSERT INTO users (nama, email, alamat, no_handphone, password, id_jenis_role) VALUES (%s, %s, %s, %s, %s, 2)"
+    cur.execute(query, (nama, email, alamat, no_handphone, password))
+    conn.commit()
+
+    print(Fore.GREEN + "\nAdmin baru berhasil ditambahkan.")
+    input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    admin_page(rows)
+
+def pengeluaran(conn):
+    try:
+        # Create a new cursor for each function call
+        cursor = conn.cursor()
+
+        tanggal_pengeluaran = input("Masukkan tanggal pengeluaran (YYYY-MM-DD): ")
+        deskripsi_pengeluaran = input("Masukkan deskripsi pengeluaran: ")
+
+        # Convert input to float
+        while True:
+            try:
+                jumlah_pengeluaran = float(input("Masukkan jumlah pengeluaran: "))
+                break
+            except ValueError:
+                print(Fore.RED + "Input jumlah pengeluaran tidak valid. Masukkan angka.")
+
+        query = "INSERT INTO pengeluaran (tanggal_pengeluaran, deskripsi_pengeluaran, jumlah_pengeluaran, id_laporan_keuangan) VALUES (%s, %s, %s, 2)"
+        cursor.execute(query, (tanggal_pengeluaran, deskripsi_pengeluaran, jumlah_pengeluaran))
+        conn.commit()
+        print("Data pengeluaran berhasil ditambahkan ke dalam tabel pengeluaran.")
+
+    except (psycopg2.Error, Exception) as error:
+        print("Error saat menambahkan data pengeluaran:", error)
+
+    finally:
+        # Close the cursor after each function call
+        cursor.close()
+    print(Fore.GREEN + "\nAnda berhasil menambahkan pengeluaran")
+    input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    admin_page(rows)
+
+def total_keuangan(conn):
+    try:
+        cursor = conn.cursor()
+
+        query = """
+            SELECT 
+                'LAPORAN KEUANGAN' as keterangan, 
+                SUM(p.jumlah) as pemasukan, 
+                SUM(m.jumlah_pengeluaran) as pengeluaran,
+                (SUM(p.jumlah) - SUM(m.jumlah_pengeluaran)) as Total_Keuangan
+            FROM 
+                transaksi p
+            JOIN 
+                pengeluaran m ON TRUE;
+        """
+
+        cursor.execute(query)
+        rowsp = cursor.fetchall()
+
+        headers = ["Keterangan", "Total Pemasukan", "Total Pengeluaran", "Total Keuangan"]
+        print(tabulate(rowsp, headers=headers, tablefmt='pretty'))
+
+    except (psycopg2.Error, Exception) as error:
+        print("Error:", error)
+
+    finally:
+        cursor.close()
+    print(Fore.GREEN + "\nNahh itu dia total keuangan kita!")
+    input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    admin_page(rows)
+    
+def pemasukan(conn):
+    try:
+        cursor = conn.cursor()
+
+        query = """SELECT tanggal_transaksi, sum(jumlah)
+                       FROM transaksi
+                       GROUP BY tanggal_transaksi"""
+
+        cursor.execute(query)
+        rowsd = cursor.fetchall()
+
+        headers = ["Tanggal Transaksi", "Total Pemasukan"]
+        print(tabulate(rowsd, headers=headers, tablefmt='pretty'))
+
+    except (psycopg2.Error, Exception) as error:
+        if isinstance(error, psycopg2.Error):
+            print(Fore.RED + f"Error PostgreSQL: {error}")
+        else:
+            print(Fore.RED + f"Terjadi kesalahan: {error}")
+
+    finally:
+        cursor.close()
+    input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    admin_page(rows)
