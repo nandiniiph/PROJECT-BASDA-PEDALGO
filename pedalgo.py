@@ -231,3 +231,27 @@ def transaksi():
         id_transaksi = cur.fetchone()[0]
     
         conn.commit()
+
+
+    # Menampilkan data penyewaan
+        cur.execute("""SELECT r.nama, 
+       p.tanggal_penyewaan, 
+       p.waktu_mulai, 
+       p.waktu_selesai, 
+       s.id_sepeda, 
+       CASE 
+           WHEN t.id_mtd_bayar = 1 THEN 'cash'
+           WHEN t.id_mtd_bayar = 2 THEN 'Bank BRI'
+           WHEN t.id_mtd_bayar = 3 THEN 'Bank Mandiri'
+           WHEN t.id_mtd_bayar = 4 THEN 'Bank BCA'
+           WHEN t.id_mtd_bayar = 5 THEN 'Dana'
+           WHEN t.id_mtd_bayar = 6 THEN 'Gopay'
+       END AS metode_pembayaran
+FROM transaksi t
+JOIN detail_penyewaan dp ON t.id_detail_penyewaan = dp.id_detail_penyewaan
+JOIN sepeda s ON s.id_sepeda = dp.id_sepeda
+JOIN penyewaan p ON p.id_penyewaan = dp.id_penyewaan
+JOIN role r ON r.id_role = dp.id_role
+JOIN metode_pembayaran m ON m.id_mtd_bayar = t.id_mtd_bayar
+    WHERE p.id_penyewaan = %s
+    """, (datapenyewaan,))
