@@ -377,3 +377,193 @@ def pemasukan(conn):
         cursor.close()
     input(Fore.MAGENTA + "Tekan enter untuk kembali...")
     admin_page(rows)
+
+def tampil_pengeluaran(conn):
+    os.system('cls')
+    try:
+        cursor = conn.cursor()
+
+        query = """SELECT tanggal_pengeluaran, sum(jumlah_pengeluaran)
+                       FROM pengeluaran
+                       GROUP BY tanggal_pengeluaran"""
+
+        cursor.execute(query)
+        rowss = cursor.fetchall()
+
+        headers = ["Tanggal Transaksi", "Total Pengeluaran"]
+        print(tabulate(rowss, headers=headers, tablefmt='pretty'))
+
+    except (psycopg2.Error, Exception) as error:
+        print("Error:", error)
+
+    finally:
+        cursor.close()
+    print(Fore.GREEN + "\nNahh itu dia total pengeluaran kita!")
+    input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    admin_page(rows)
+    
+def lihat_laporan_keuangan():
+    try:
+        os.system('cls')
+        print(Fore.YELLOW + "=========================================")
+        print(Fore.CYAN + "          Lihat Laporan Keuangan          ")
+        print(Fore.YELLOW + "=========================================\n")
+        print(Fore.CYAN + "1. Total Pemasukan")
+        print(Fore.CYAN + "2. Total Pengeluaran")
+        print(Fore.CYAN + "3. Total Keuangan")
+        print(Fore.CYAN + "4. Keluar")
+        print(Fore.YELLOW + "=========================================")
+        choice = input(Fore.MAGENTA + "Pilih menu: " + Fore.RESET)
+
+        if choice == '1':
+            pemasukan(conn)
+        elif choice == '2':
+            tampil_pengeluaran(conn)
+        elif choice == '3':
+            total_keuangan(conn)
+        elif choice == '4':
+            admin_page(rows)
+        else:
+            print(Fore.RED + "Pilihan tidak valid, coba lagi.")
+            input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+            lihat_laporan_keuangan()
+    except Exception as e:
+        print(Fore.RED + f"Terjadi kesalahan: {e}")
+        input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    
+
+def loading_page():
+    os.system('cls')
+    print(Fore.CYAN + "Sedang memuat, harap tunggu...")
+    time.sleep(2)  
+    
+    os.system('cls')
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "1. Login")
+    print(Fore.CYAN + "2. Register")
+    print(Fore.YELLOW + "=========================================")
+    
+    choice = input(Fore.MAGENTA + "Pilih opsi (1/2): ")
+    if choice == '1':
+        global logged_in_user
+        logged_in_user = login()
+        if logged_in_user:
+            after_login(logged_in_user)
+    elif choice == '2':
+        register()
+    else:
+        print(Fore.RED + "Pilihan tidak valid, coba lagi.")
+        time.sleep(2)
+        loading_page()
+
+def admin_page(user_data):  # Berikan user_data sebagai argumen
+    os.system('cls')
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + f" Halo Admin {user_data[1]}! ")  # Gunakan user_data[1] untuk username
+    print(Fore.YELLOW + "=========================================\n")
+    print(Fore.CYAN + "1. Lihat Data")
+    print(Fore.CYAN + "2. Tambah Admin")
+    print(Fore.CYAN + "3. Tambah Pengeluaran")
+    print(Fore.CYAN + "4. Lihat Laporan Keuangan")
+    print(Fore.CYAN + "5. Logout")
+    print(Fore.YELLOW + "=========================================")
+    choice = input(Fore.MAGENTA + "Pilih menu: " + Fore.RESET)
+    if choice == '1':
+        read(cur)
+    elif choice == '2':
+        tambah_admin()
+    elif choice == '3':
+        pengeluaran(conn)
+    elif choice == '4':
+        lihat_laporan_keuangan()
+    elif choice == '5':
+        display_welcome_message()
+    else:
+        print(Fore.RED + "Pilihan tidak valid, coba lagi.")
+        input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+        admin_page(rows)
+        
+def lihat_profil():
+    loading_animation("Memuat data pengguna")
+    os.system('cls')
+    print(Fore.YELLOW + "===================================================")
+    print(Fore.GREEN + "                        Profil                      ")
+    print(Fore.YELLOW + "===================================================")
+    print(Fore.WHITE + f"Nama            : {logged_in_user[1]}")
+    print(Fore.WHITE + f"Email           : {logged_in_user[2]}")
+    print(Fore.WHITE + f"Alamat          : {logged_in_user[3]}")
+    print(Fore.WHITE + f"No Handphone    : {logged_in_user[4]}")
+    input(Fore.MAGENTA + "Tekan enter untuk kembali...")
+    after_login(logged_in_user)
+
+def after_login(logged_in_user):
+    loading_animation("Loading ya bosqueee")
+    os.system('cls')
+    print(Fore.CYAN + f"Selamat datang, {logged_in_user[1]}!")
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.CYAN + "1. Lihat Profil")
+    print(Fore.CYAN + "2. Sewa Sepeda")
+    print(Fore.CYAN + "3. Keluar")
+    print(Fore.YELLOW + "=========================================")
+    choice = input(Fore.MAGENTA + "Pilih opsi (1/2/3): ")
+    if choice == '1':
+        lihat_profil()
+    elif choice == '2':
+        sewa_sepeda()
+    elif choice == '3':
+        print(Fore.CYAN + "Terima kasih telah menggunakan Pedalgo!")
+        display_welcome_message()
+    else:
+        print(Fore.RED + "Pilihan tidak valid, coba lagi.")
+        time.sleep(2)
+        after_login()
+
+def loading_animation(message):
+    print(Fore.CYAN + message, end="", flush=True)
+    for _ in range(3):
+        time.sleep(0.5)
+        print(Fore.CYAN + ".", end="", flush=True)
+    time.sleep(0.5)
+    print("\n")
+
+def display_welcome_message():
+    init(autoreset=True)
+    os.system('cls')
+    ascii_art = pyfiglet.figlet_format("Pedalgo")
+    
+    green_ascii_art = Fore.GREEN + ascii_art
+
+    print(green_ascii_art)
+    
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.WHITE+ "        Selamat datang di Pedalgo!       ")
+    print(Fore.YELLOW + "=========================================")
+    print(Fore.WHITE + "      Silakan login terlebih dahulu. ")
+    print(Fore.YELLOW + "=========================================")
+    
+    input(Fore.MAGENTA + "Tekan enter untuk melanjutkan...")
+    
+    loading_page()
+    
+def reset_id():
+    query = "SELECT pg_get_serial_sequence('detail_penyewaan', 'id_detail_penyewaan'); ALTER SEQUENCE detail_penyewaan_id_detail_penyewaan_seq RESTART WITH 6;"
+    cur.execute(query)
+    conn.commit()
+
+def cek():
+    query = "SELECT * FROM role"
+    cur.execute(query)
+    global rows
+    rows = cur.fetchone()
+    kita_coba()
+    return rows
+    
+def kita_coba():
+    print(rows[1])
+
+display_welcome_message()
+# # reset_id()
+# # read(cur)
+
+# cek()
+
