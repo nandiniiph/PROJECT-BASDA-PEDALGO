@@ -290,3 +290,27 @@ def tambah_admin():
     print(Fore.GREEN + "\nAdmin baru berhasil ditambahkan.")
     input(Fore.MAGENTA + "Tekan enter untuk kembali...")
     admin_page(rows)
+
+def pengeluaran(conn):
+    try:
+        # Create a new cursor for each function call
+        cursor = conn.cursor()
+
+        tanggal_pengeluaran = input("Masukkan tanggal pengeluaran (YYYY-MM-DD): ")
+        deskripsi_pengeluaran = input("Masukkan deskripsi pengeluaran: ")
+
+        # Convert input to float
+        while True:
+            try:
+                jumlah_pengeluaran = float(input("Masukkan jumlah pengeluaran: "))
+                break
+            except ValueError:
+                print(Fore.RED + "Input jumlah pengeluaran tidak valid. Masukkan angka.")
+
+        query = "INSERT INTO pengeluaran (tanggal_pengeluaran, deskripsi_pengeluaran, jumlah_pengeluaran, id_laporan_keuangan) VALUES (%s, %s, %s, 2)"
+        cursor.execute(query, (tanggal_pengeluaran, deskripsi_pengeluaran, jumlah_pengeluaran))
+        conn.commit()
+        print("Data pengeluaran berhasil ditambahkan ke dalam tabel pengeluaran.")
+
+    except (psycopg2.Error, Exception) as error:
+        print("Error saat menambahkan data pengeluaran:", error)
